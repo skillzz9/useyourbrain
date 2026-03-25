@@ -10,7 +10,7 @@ document.addEventListener(
       document.querySelector("#prompt-textarea"); // ChatGPT
 
     if (input) {
-      lastTypedPrompt = input.innerText || input.value;
+      lastTypedPrompt = (input.innerText || input.value).trim();
     }
   },
   true,
@@ -18,36 +18,47 @@ document.addEventListener(
 
 // 2. Captures the prompt and saves to Chrome Storage
 function logPrompt() {
-  if (lastTypedPrompt && lastTypedPrompt.trim() !== previousLoggedPrompt) {
-    console.log("Saving to storage now...");
-
-    const promptData = {
-      site: window.location.hostname.includes("gemini") ? "Gemini" : "ChatGPT",
-      time: new Date().toLocaleString(),
-      prompt: lastTypedPrompt.trim(),
-    };
-
-    chrome.storage.local.get({ promptHistory: [] }, (result) => {
-      if (chrome.runtime.lastError) {
-        console.error("Storage Get Error:", chrome.runtime.lastError);
+  // NEW: First, check if recording is actually enabled
+  chrome.storage.local.get(
+    { isRecording: true, promptHistory: [] },
+    (result) => {
+      // IF TOGGLE IS OFF, STOP HERE
+      if (result.isRecording === false) {
+        console.log("Recording is OFF. Skipping log.");
         return;
       }
 
-      let history = result.promptHistory;
-      history.unshift(promptData);
+      if (lastTypedPrompt && lastTypedPrompt !== previousLoggedPrompt) {
+        console.log("Saving to storage now...");
 
-      chrome.storage.local.set({ promptHistory: history.slice(0, 100) }, () => {
-        if (chrome.runtime.lastError) {
-          console.error("Storage Set Error:", chrome.runtime.lastError);
-        } else {
-          console.log("SUCCESS: Data is now in Chrome storage.");
-        }
-      });
-    });
+        const promptData = {
+          site: window.location.hostname.includes("gemini")
+            ? "Gemini"
+            : "ChatGPT",
+          time: new Date().toLocaleString(),
+          prompt: lastTypedPrompt,
+        };
 
-    previousLoggedPrompt = lastTypedPrompt.trim();
-    lastTypedPrompt = "";
-  }
+        let history = result.promptHistory;
+        history.unshift(promptData);
+
+        // Keep only last 100 entries
+        chrome.storage.local.set(
+          { promptHistory: history.slice(0, 100) },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.error("Storage Set Error:", chrome.runtime.lastError);
+            } else {
+              console.log("SUCCESS: Data is now in Chrome storage.");
+            }
+          },
+        );
+
+        previousLoggedPrompt = lastTypedPrompt;
+        lastTypedPrompt = "";
+      }
+    },
+  );
 }
 
 // 3. Listener for "Enter" key
@@ -61,17 +72,15 @@ document.addEventListener(
   true,
 );
 
-// 4. Listener for Send Buttons (with 50ms safety delay)
+// 4. Listener for Send Buttons
 document.addEventListener(
   "click",
   (event) => {
-    // Combined selectors for Gemini and ChatGPT buttons
     const sendButton = event.target.closest(
       'button.send-button, button[aria-label="Send message"], button[data-testid="send-button"]',
     );
 
     if (sendButton) {
-      // Small delay ensures we capture the input before the site clears the textarea
       setTimeout(logPrompt, 50);
     }
   },
