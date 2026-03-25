@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Prompt Logger",
+  "version": "1.0",
+  "permissions": [
+    "storage" 
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://gemini.google.com/*", "https://chatgpt.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
