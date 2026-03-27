@@ -2,11 +2,11 @@
 
 ## There's a fine line between using AI to boost your learning and outsourcing your brain to it.
 
-Too often we see people say "AI is great for learning!" but *rarely do we see people use the tools in a way that actually enhances memory, ciritical thinking and new nueron paths being formed.* For people who want to learn *critical thinking skills and deeply understand valuable knowledge,* it's hard to *resist the urge to give in to getting the answer when learning really happens.* 
+Too often we see people say "AI is great for learning!" but **rarely do we see people use the tools in a way that actually enhances memory, ciritical thinking and new nueron paths being formed.** For people who want to learn **critical thinking skills and deeply understand valuable knowledge,** it's hard to **resist the urge to give in to getting the answer when learning really happens.** 
 
 We have gotten so used to fast, quick “learning” that any time we spend on actually understanding something feels like a waste of time, when in reality it's where true learning happens. Blocking all the sites is not an option, as AI can enhance learning if used correctly, but with the answer at your finger tips, when things get hard people tend to give in and skip that crucial learning phase.
 
-This application is not about being Anti AI, *we think AI is a valuable tool* but heres the catch: only when used *CORRECTLY*. 
+This application is not about being Anti AI, **we think AI is a valuable tool** but heres the catch: only when used **CORRECTLY**. 
 
 ## How Useyourbrain SOLVES this problem
 
@@ -20,6 +20,6 @@ A paired extension will log and save all the prompts you used in that session lo
 You can also set times when AI is blocked from you entirely and spend a weekend without interacting with LLM chatbots. It even has a feature that prevents the annoying (but sometimes useful) AI output when you search on the internet. 
 
 ## Privacy? 
-Useyourbrain respects your privacy so much that *nothing leaves your computer.* A mini LLM runs on your local device when analyzing the prompts you used, so nothing is sent to any external servers. Every session, prompt, score, feedback is all stored locally onto your hard drive. Unless someone steals your laptop and logs into your account, then you should be worried. 
+Useyourbrain respects your privacy so much that **nothing leaves your computer.** A mini LLM runs on your local device when analyzing the prompts you used, so nothing is sent to any external servers. Every session, prompt, score, feedback is all stored locally onto your hard drive. Unless someone steals your laptop and logs into your account, then you should be worried. 
 
 
