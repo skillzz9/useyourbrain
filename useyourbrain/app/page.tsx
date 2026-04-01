@@ -1,121 +1,114 @@
-'use client'; // Required to use hooks and access the 'window' object
+'use client';
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-
-// extension that records the prompts
-const EXTENSION_ID = "hfleomfalfkdcgopbihklbhlhijkolpc";
-
-declare global {
-  interface Window {
-    chrome: any;
-  }
-}
+import React from "react";
+import { useExtensionData } from '@/hooks/useExtensionData';
+import EndOfSessionModal from '@/components/EndOfSessionModal'
+import CustomEmail from "@/components/CustomEmail";
 
 export default function Home() {
-  const [connectionStatus, setConnectionStatus] = useState("DISCONNECTED");
-  const [prompts, setPrompts] = useState([]);
+  const { 
+    prompts, 
+    setPrompts, 
+    status, 
+    fetchData, 
+    isRecording, 
+    setIsRecording 
+  } = useExtensionData();
 
-  const clearAllPrompts = () => {
-  if (typeof window !== "undefined" && window.chrome?.runtime) {
-    window.chrome.runtime.sendMessage(
-      EXTENSION_ID,
-      { action: "clearHistory" },
-      (response: any) => {
-        if (response?.success) {
-          setPrompts([]); // Clear the UI immediately
-          console.log("Slate cleaned!");
-        }
-      }
-    );
-  }
-};
-useEffect(() => {
-  const chromeAPI = typeof window !== "undefined" ? (window as any).chrome : null;
-
-  if (chromeAPI && chromeAPI.runtime) {
-    console.log("Attempting to connect to extension:", EXTENSION_ID);
-
-    chromeAPI.runtime.sendMessage(
-      EXTENSION_ID,
-      { action: "getHistory" },
-      (response: any) => {
-        // CHECK THE ERROR HERE
-        if (chromeAPI.runtime.lastError) {
-          const errorMsg = chromeAPI.runtime.lastError.message;
-          console.error("CHROME EXTENSION ERROR:", errorMsg);
-          
-          setConnectionStatus(`ERROR: ${errorMsg}`);
-          return;
-        }
-
-        if (response && response.history) {
-          console.log("Data received successfully!");
-          setConnectionStatus("CONNECTED");
-          setPrompts(response.history);
-        } else {
-          console.warn("Received empty or invalid response:", response);
-          setConnectionStatus("EMPTY RESPONSE");
-        }
-      }
-    );
-  } else {
-    console.warn("Chrome API not found. Are you in a Chromium browser?");
-    setConnectionStatus("CHROME API MISSING");
-  }
-}, []);
+  const handleToggleRecording = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newState = e.target.checked;
+    setIsRecording(newState);
+  };
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black min-h-screen">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
+    <div className="min-h-screen bg-paper p-6 md:p-12">
+      <div className="max-w-3xl mx-auto">
         
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left mt-10">
-          {/* Connection Badge */}
-          <div className={`px-4 py-1 rounded-full text-xs font-bold tracking-widest ${
-            connectionStatus === "CONNECTED" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-          }`}>
-            {connectionStatus}
+        {/* Header Section: High Contrast Serif */}
+        <header className="mb-12 border-b-2 border-ink pb-8 flex justify-between items-end">
+          <div>
+            <h1 className="text-5xl font-bold tracking-tighter italic text-ink">
+              PromptLogger
+            </h1>
+            <div className="flex items-center gap-3 mt-4">
+              <span className={`w-3 h-3 border border-ink ${
+                status === "CONNECTED" ? "bg-ink animate-pulse" : "bg-transparent"
+              }`} />
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-muted">
+                System Status: {status}
+              </p>
+            </div>
           </div>
 
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            {connectionStatus === "CONNECTED" 
-              ? `Displaying ${prompts.length} Prompts` 
-              : "Connecting to Extension..."}
-          </h1>
+          <div className="flex gap-4">
+            <button 
+              onClick={fetchData}
+              className="px-4 py-2 border-2 border-ink font-bold text-xs uppercase tracking-widest hover:bg-card transition-colors cursor-pointer"
+            >
+              Sync Data
+            </button>
+            <button 
+              onClick={() => setPrompts([])}
+              className="px-4 py-2 border-2 border-ink bg-ink text-paper font-bold text-xs uppercase tracking-widest cursor-pointer shadow-[4px_4px_0px_0px_var(--color-ink-shadow)]"
+            >
+              Clear Log
+            </button>
+          </div>
+        </header>
+
+        {/* Capture Control: "The Checklist Look" */}
+        <div className="mb-12 p-6 border-2 border-ink bg-card shadow-[6px_6px_0px_0px_var(--color-ink-shadow)] flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold uppercase tracking-tight">Capture Status</h2>
+            <p className="text-sm italic text-ink-muted leading-tight">
+              {isRecording ? "Actively logging your logic for review." : "Logging is currently paused."}
+            </p>
+          </div>
           
-          <div className="w-full space-y-4 mt-4">
-            {prompts.map((item: any, index: number) => (
-              <div key={index} className="p-4 border rounded-lg border-zinc-200 dark:border-zinc-800">
-                <p className="text-xs text-zinc-400 mb-1">{item.site} • {item.time}</p>
-                <p className="text-sm text-zinc-800 dark:text-zinc-200">{item.prompt}</p>
-              </div>
-            ))}
-          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={isRecording} 
+              onChange={handleToggleRecording}
+              className="sr-only peer" 
+            />
+            {/* Custom Square Toggle to match the aesthetic */}
+            <div className="w-14 h-8 border-2 border-ink bg-paper peer-checked:bg-ink transition-colors relative">
+              <div className={`absolute top-1 left-1 w-4 h-4 border-2 border-ink bg-paper transition-transform ${isRecording ? 'translate-x-6 bg-paper' : ''}`}></div>
+            </div>
+          </label>
         </div>
 
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row mt-10">
-          <button
-            onClick={() => window.location.reload()}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-          >
-            Refresh Data
-          </button>
-          <button
-  onClick={clearAllPrompts}
-  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
->
-  Clear All History
-</button>
-        </div>
-      </main>
+        {/* Main Feed: The "Ledger" Look */}
+        <main className="space-y-8">
+          {prompts.length > 0 ? (
+            prompts.map((p: any, i: number) => (
+              <div key={i} className="border-2 border-ink p-8 bg-card relative overflow-hidden">
+                <div className="absolute top-0 right-0 px-3 py-1 bg-ink text-paper text-[10px] font-bold uppercase tracking-widest">
+                  {p.site || "Gemini"}
+                </div>
+                <p className="text-xl italic text-ink leading-relaxed mb-4">
+                  "{p.prompt}"
+                </p>
+                <div className="flex justify-between items-center pt-4 border-t border-ink/10">
+                  <span className="text-[10px] font-bold uppercase text-ink-muted">Logged at: {p.time}</span>
+                  <span className="text-xs font-bold italic opacity-40">#00{i + 1}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-32 text-center border-2 border-ink border-dashed bg-card/30">
+              <p className="text-ink-muted italic text-lg">
+                Your intellectual ledger is currently empty.
+              </p>
+            </div>
+          )}
+        </main>
+
+        {/* Footer: Thesis Branding */}
+      </div>
+      <EndOfSessionModal></EndOfSessionModal>
+      <CustomEmail></CustomEmail>
     </div>
   );
 }
