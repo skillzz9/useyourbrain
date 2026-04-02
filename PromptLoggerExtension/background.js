@@ -4,20 +4,25 @@ console.log("Service Worker Started!");
 // Listen for messages from your Next.js app (External)
 chrome.runtime.onMessageExternal.addListener(
   (request, sender, sendResponse) => {
-    console.log("Message received from website:", sender.url);
-
+    // 1. Fetching History (Aligned with Hook)
     if (request.action === "getHistory") {
-      // Pull prompts from local storage
       chrome.storage.local.get({ promptHistory: [] }, (data) => {
-        console.log("Sending data back to Next.js:", data.promptHistory);
         sendResponse({ history: data.promptHistory });
       });
-
-      // Return true to keep the message channel open for the async storage call
       return true;
-    } else if (request.action === "clearHistory") {
+    }
+
+    // 2. Clearing History
+    if (request.action === "clearHistory") {
       chrome.storage.local.set({ promptHistory: [] }, () => {
-        console.log("History cleared via Website");
+        sendResponse({ success: true });
+      });
+      return true;
+    }
+
+    // 3. Updating Recording Toggle (IMPORTANT: Added this)
+    if (request.action === "updateSettings") {
+      chrome.storage.local.set({ isRecording: request.isRecording }, () => {
         sendResponse({ success: true });
       });
       return true;
